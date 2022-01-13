@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "myst",
+    "myst": "myst-6d32f",
+    "testing-myst": "myst"
+  }
+}

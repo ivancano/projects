@@ -1,0 +1,813 @@
+# serverless.yml
+
+service: ${opt:customer}-CmsMediosApi
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${opt:stage}
+  region: ${opt:region}
+  apiKeys:
+    - cmsmedios-${opt:customer}-apikey
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region}:*:*"
+    - Effect: Allow
+      Action:
+        - cognito-idp:AdminConfirmSignUp
+        - cognito-idp:AdminResetUserPassword
+        - cognito-idp:AdminGetUser
+        - cognito-idp:AdminDeleteUser
+      Resource:
+        - Fn::GetAtt:
+          - CognitoUserPool
+          - Arn
+functions:
+  payments:
+    handler: index.payments
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /payments
+          cors: true
+          private: true
+      - http:
+          method: any
+          path: "payments/{proxy+}"
+          cors: true
+          private: true
+  users:
+    handler: index.users
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /users
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "users/{proxy+}"
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+    vpc:
+      securityGroupIds:
+        - Fn::GetAtt: InstanceSecurityGroup.GroupId
+      subnetIds:
+        - !Ref PrivateSubnet
+  reports:
+    handler: index.reports
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /reports
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "reports/{proxy+}"
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+  subscriptions:
+    handler: index.subscriptions
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /subscriptions
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "subscriptions/{proxy+}"
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "subscriptions/expired"
+          cors: true
+    vpc:
+      securityGroupIds:
+        - Fn::GetAtt: InstanceSecurityGroup.GroupId
+      subnetIds:
+        - !Ref PrivateSubnet
+
+  paymentGateways:
+    handler: index.paymentGateways
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /paymentGateways
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "paymentGateways/{proxy+}"
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+
+  contributions:
+    handler: index.contributions
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /contributions
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+      - http:
+          method: any
+          path: "contributions/{proxy+}"
+          cors: true
+          private: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: UserPoolAuthorizer
+  webhooks:
+    handler: index.webhooks
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /webhooks
+          cors: true
+      - http:
+          method: any
+          path: "webhooks/{proxy+}"
+          cors: true
+  login:
+    handler: index.login
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /login
+          cors: true
+          private: true
+      - http:
+          method: any
+          path: "login/{proxy+}"
+          cors: true
+          private: true
+          
+  openMethods:
+    handler: index.openMethods
+    timeout: 60
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - http:
+          method: any
+          path: /openmethods
+          cors: true
+          private: true
+      - http:
+          method: any
+          path: "openmethods/{proxy+}"
+          cors: true
+          private: true
+      - http:
+          method: any
+          path: "openmethods/payments/mercadopago/{proxy+}"
+          cors: true
+      - http:
+          method: any
+          path: "openmethods/payments/serfinsa/{proxy+}"
+          cors: true
+    vpc:
+      securityGroupIds:
+        - Fn::GetAtt: InstanceSecurityGroup.GroupId
+      subnetIds:
+        - !Ref PrivateSubnet
+    
+  cronjobs:
+    handler: index.cronjobs
+    timeout: 60
+    environment:
+      AWS_COGNITO_USERPOOL_ID: !Ref CognitoUserPool
+      AWS_COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      cmsUsers: ${opt:customer}-cmsUsers
+      cmsSubscriptions: ${opt:customer}-cmsSubscriptions
+      cmsPaymentMethods: ${opt:customer}-cmsPaymentMethods
+      cmspaymentGateways: ${opt:customer}-cmspaymentGateways
+      cmsContributions: ${opt:customer}-cmsContributions
+      cmsPayments: ${opt:customer}-cmsPayments
+      cmsMercadoPago: ${opt:customer}-cmsMercadoPago
+      cmsMercadoPagoCustomers: ${opt:customer}-cmsMercadoPagoCustomers
+      cmsMercadoPagoCards: ${opt:customer}-cmsMercadoPagoCards
+      cmsExceptions: ${opt:customer}-cmsExceptions
+      cmsSerfinsa: ${opt:customer}-cmsSerfinsa
+      cmsSerfinsaCustomers: ${opt:customer}-cmsSerfinsaCustomers
+      cmsSerfinsaCards: ${opt:customer}-cmsSerfinsaCards
+    events:
+      - schedule: rate(1 day)
+    vpc:
+      securityGroupIds:
+        - Fn::GetAtt: InstanceSecurityGroup.GroupId
+      subnetIds:
+        - !Ref PrivateSubnet
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+    GatewayResponseDefault5XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_5XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+          
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Name: "verified_email"
+              Priority: 1
+        UserPoolName: ${opt:customer}-cms-user-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        EmailVerificationMessage: Tu codigo de verificación es <b>{####}</b>.
+        EmailVerificationSubject: Valida tu cuenta
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${opt:customer}-cms-user-pool-client
+        UserPoolId:
+          Ref: CognitoUserPool
+        ExplicitAuthFlows:
+          - ADMIN_NO_SRP_AUTH
+        GenerateSecret: false
+
+    UserPoolAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: ${opt:customer}-CognitoUserPool
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ProviderARNs:
+          - Fn::GetAtt:
+              - CognitoUserPool
+              - Arn
+    LambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+            Action:
+            - sts:AssumeRole
+        Path: "/"
+        Policies:
+          - PolicyName: dynamodbAccessRole
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+              - Effect: Allow
+                Action:
+                - dynamodb:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                - logs:*
+                Resource: "*"
+    Exceptions:
+      Type: AWS::Lambda::Function
+      DependsOn: ExceptionsTable
+      Properties:
+        Code:
+          ZipFile: >
+            const AWS = require("aws-sdk");
+            const response = require("cfn-response");
+            const docClient = new AWS.DynamoDB.DocumentClient();
+            const table = process.env.tableExceptions;
+            let request = [];
+            const messages = [
+                {en: "Password did not conform with policy: Password not long enough", es: "La contraseña no es lo suficientemente larga", enCustom: "Password not long enough", esCustom: "La contraseña no es lo suficientemente larga"},
+                {en: "Password did not conform with policy: Password must have uppercase characters", es: "La contraseña debe contener al menos una letra mayúscula", enCustom: "Password must have uppercase characters", esCustom: "La contraseña debe contener al menos una letra mayúscula"},
+                {en: "Password did not conform with policy: Password must have lowercase characters", es: "La contraseña debe contener al menos una letra minúscula", enCustom: "Password must have lowercase characters", esCustom: "La contraseña debe contener al menos una letra minúscula"},
+                {en: "Password did not conform with policy: Password must have numeric characters", es: "La contraseña debe contener caracteres numéricos", enCustom: "Password must have numeric characters", esCustom: "La contraseña debe contener caracteres numéricos"},
+                {en: "Password did not conform with policy: Password must have symbol characters", es: "La contraseña debe contener al menos un signo", enCustom: "Password must have symbol characters", esCustom: "La contraseña debe contener al menos un signo"},
+                {en: "Member must have length greater than or equal to 6", es: "El miembro debe tener una longitud mayor o igual a 6", enCustom: "Password not long enough", esCustom: "La contraseña no es lo suficientemente larga"},
+                {en: "Member must satisfy regular expression pattern", es: "El miembro debe cumplir el patrón de expresión regular", enCustom: "Password must not have invalid characters", esCustom: "La contraseña no debe tener caracteres inválidos"},
+            ];
+            exports.handler = (event, context) => {
+              (async () => {
+                const rows = await docClient.scan({
+                    TableName: table,
+                    AttributesToGet: ['id'],
+                }).promise();
+                for (let index = 0; index < rows.Items.length; index++) {
+                  await docClient.delete({
+                      TableName: table,
+                      Key: rows.Items[index],
+                  }).promise();
+                }
+                for (let index = 0; index < messages.length; index++) {
+                  const m = messages[index];
+                  const id = index + 1;
+                  request.push({
+                    PutRequest: {
+                      Item: {
+                        en: m.en,
+                        es: m.es,
+                        enCustom: m.enCustom,
+                        esCustom: m.esCustom,
+                        id: id.toString()
+                      }
+                    }
+                  });
+                }
+                let params = {
+                  RequestItems: {}
+                };
+                params.RequestItems[table] = request;
+                const result = await docClient.batchWrite(params).promise();
+              })();
+              response.send(event, context, response.SUCCESS, {});
+            };
+        Handler: index.handler
+        Environment:
+          Variables:
+            tableExceptions: ${opt:customer}-cmsExceptions
+        Role:
+          Fn::GetAtt: [ LambdaRole , "Arn" ]
+        Runtime: nodejs12.x
+        Timeout: 60
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsUsers
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    ContributionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsContributions
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    PaymentsGatewayTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmspaymentGateways
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    PaymentsMethodsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsPaymentMethods
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    PaymentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsPayments
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    SubscriptionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsSubscriptions
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    MercadoPagoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsMercadoPago
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    MercadoPagoCustomersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsMercadoPagoCustomers
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    MercadoPagoCardsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsMercadoPagoCards
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    SerfinsaTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsSerfinsa
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    SerfinsaCustomersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsSerfinsaCustomers
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    SerfinsaCardsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsSerfinsaCards
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    ExceptionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${opt:customer}-cmsExceptions
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    InitializeExceptionsTable:
+      Type: Custom::Exceptions
+      DependsOn: Exceptions
+      Properties:
+        ServiceToken:
+          Fn::GetAtt: [ Exceptions , "Arn" ]
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: 10.22.0.0/16
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        Tags:
+        - Key: Name
+          Value: !Sub ${opt:customer}-VPC
+    InstanceSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      DependsOn: VPC
+      Properties:
+        GroupDescription: ${opt:customer} - default VPC security group
+        VpcId:
+          Ref: VPC
+    SecurityGroupIngress:
+      Type: AWS::EC2::SecurityGroupIngress
+      DependsOn: InstanceSecurityGroup
+      Properties:
+        GroupId: !Ref InstanceSecurityGroup
+        IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
+    SecurityGroupEgress:
+      Type: AWS::EC2::SecurityGroupEgress
+      DependsOn: InstanceSecurityGroup
+      Properties:
+        GroupId: !Ref InstanceSecurityGroup
+        IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 0.0.0.0/0
+    PublicSubnet:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.22.0.0/24
+        AvailabilityZone: !Select [ 0, !GetAZs '' ]    # Get the first AZ in the list       
+        Tags:
+        - Key: Name
+          Value: !Sub ${opt:customer}-PublicSubnet
+    PrivateSubnet:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId: !Ref VPC
+        CidrBlock: 10.22.1.0/24
+        AvailabilityZone: !Select [ 0, !GetAZs '' ]    # Get the first AZ in the list       
+        Tags:
+        - Key: Name
+          Value: !Sub ${opt:customer}-PrivateSubnet
+    # Our VPC will need internet access:   
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      DependsOn: VPC
+      Properties:
+        Tags:
+          - Key: Name
+            Value: !Sub ${opt:customer}-InternetGateway
+    AttachGateway:
+      Type: AWS::EC2::VPCGatewayAttachment
+      # Notice how you can't attach an IGW to a VPC unless both are created:
+      Properties:
+        VpcId: !Ref VPC
+        InternetGatewayId: !Ref InternetGateway
+    PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: ${opt:customer}-PublicRouteTable
+    PublicRoute1:   # Public route table has direct routing to IGW:
+      Type: AWS::EC2::Route
+      DependsOn: AttachGateway
+      Properties:
+        RouteTableId: !Ref PublicRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId: !Ref InternetGateway
+    PrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: ${opt:customer}-PrivateRouteTable
+    PrivateRoute1:  # Private route table can access web via NAT (created below)
+      Type: AWS::EC2::Route
+      Properties:
+        RouteTableId: !Ref PrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        # Route traffic through the NAT Gateway:
+        NatGatewayId: !Ref NATGateway
+    NATGateway:
+      Type: AWS::EC2::NatGateway
+      Properties:
+        AllocationId: !GetAtt ElasticIPAddress.AllocationId
+        SubnetId: !Ref PublicSubnet
+        Tags:
+        - Key: Name
+          Value: !Sub ${opt:customer}-NATGateway
+    ElasticIPAddress:
+      Type: AWS::EC2::EIP
+      DependsOn: AttachGateway
+      Properties:
+        Domain: VPC
+        Tags:
+        - Key: Name
+          Value: !Sub ${opt:customer}-ElasticIPAddress
+    PublicSubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PublicSubnet
+        RouteTableId: !Ref PublicRouteTable
+    PrivateSubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        SubnetId: !Ref PrivateSubnet
+        RouteTableId: !Ref PrivateRouteTable
+  Outputs:
+    UserPoolAuthorizerId:
+      Value:
+        Ref: UserPoolAuthorizer
+
+plugins:
+  - serverless-offline

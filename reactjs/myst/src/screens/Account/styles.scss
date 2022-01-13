@@ -1,0 +1,174 @@
+@import '../../styles/_variables.scss';
+
+.container-account {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+
+	.account {
+		background-color: $light_gray;
+		height: 100%;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+
+		.logo {
+			margin: 30px 0 0 0;
+			text-align: center;
+		}
+
+		.text-1 {
+			margin: 10px 0px 40px;
+
+			span {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				letter-spacing: 0.2em;
+				color: #232129;
+			}
+		}
+
+		.title-my-account {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 25px;
+			line-height: 29px;
+			color: #232129;
+		}
+
+		.text-subscription {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 13px;
+			line-height: 24px;
+			color: #232129;
+		}
+
+		.field-value {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: 500;
+			font-size: 15px;
+			line-height: 24px;
+			width: 255px;
+			height: 57px;
+			color: #232129;
+			letter-spacing: 0.2em;
+			padding-left: 30px;
+		}
+
+		button, button:hover {
+			border: 1px solid $primary_color;
+			background-color: $primary_color;
+			border-radius: 0px;
+			width: 255px;
+			height: 57px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 24px;
+			margin: 30px 0 0 0;
+			letter-spacing: 0.2em;
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+		}
+
+		.container-field {
+			margin: 50px 0 0 0;
+			padding: 0 30px;
+			.label {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: bold;
+				font-size: 9px;
+				line-height: 24px;
+				color: #232129;
+				letter-spacing: 0.2em;
+			}
+			.field {
+				position: relative;
+
+				input, input:focus {
+					background-color: transparent;
+					border: none;
+					border-radius: 0px;
+					font-family: $primary_font_family;
+					font-style: normal;
+					font-weight: 500;
+					font-size: 15px;
+					line-height: 24px;
+					width: 100%;
+					height: 57px;
+					color: #232129;
+					letter-spacing: 0.2em;
+					padding-left: 30px;
+				}
+
+				.svg-email {
+					position: absolute;
+					top: 22px;
+					left: 15px;
+				}
+
+				.svg-password {
+					position: absolute;
+					top: 18px;
+					left: 10px;
+				}
+			}
+			.field-editing {
+				position: relative;
+
+				input, input:focus {
+					background-color: transparent;
+					border-bottom: 0.5px solid #232129;
+					border-top: none;
+					border-right: none;
+					border-left: none;
+					border-radius: 0px;
+					font-family: $primary_font_family;
+					font-style: normal;
+					font-weight: 500;
+					font-size: 15px;
+					line-height: 24px;
+					width: 100%;
+					height: 57px;
+					color: #232129;
+					letter-spacing: 0.2em;
+					padding-left: 30px;
+				}
+
+				.svg-email {
+					position: absolute;
+					top: 22px;
+					left: 15px;
+				}
+
+				.svg-password {
+					position: absolute;
+					top: 18px;
+					left: 10px;
+				}
+			}
+		}
+
+		.text-danger {
+			text-align: right;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 10px;
+			line-height: 15px;
+			margin-top: 5px;
+			width: 255px;
+		}
+	}
+}

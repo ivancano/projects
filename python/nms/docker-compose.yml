@@ -1,0 +1,35 @@
+
+
+version: '3.0'
+
+services:
+  servicenow_mysql:
+    image: servicenow_mysql:8.0.25
+    environment:
+      - MYSQL_ROOT_PASSWORD=sevonesnow
+      - MYSQL_DATABASE=streamer
+    ports:
+      - 3310:3306
+    volumes:
+      - /Users/ivancano/Projects/3xm/nms-snow-docker-config/db:/var/lib/mysql
+    networks:
+      - core
+  servicenow_redis:
+    image: servicenow_redis:alpine3.13
+    ports:
+      - 6389:6379
+    networks:
+      - core
+  servicenow_itom_v1:
+    image: servicenow_itom_v1
+    volumes:
+    - /Users/ivancano/Projects/3xm/nms-snow-master/config:/home/user/config
+    networks:
+      - core 
+    depends_on:
+    - servicenow_mysql
+    - servicenow_redis
+    restart: unless-stopped
+networks:
+  core:
+    driver: bridge

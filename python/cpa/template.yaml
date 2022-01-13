@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Enter the project tag
+    MaxLength: 100
+    MinLength: 3
+  CustomerName:
+    Type: String
+    Description: Enter the customer tag
+    MaxLength: 100
+    MinLength: 3
+  EnvironmentName:
+    Type: String
+    Description: Enter the environment tag
+    MaxLength: 100
+    MinLength: 3
+  S3Bucket:
+    Type: String
+    Description: S3 Bucket to process images
+    MaxLength: 100
+    MinLength: 3
+  S3BucketURL:
+    Type: String
+    Description: S3 Bucket URL with the CF templates
+    MaxLength: 100
+    MinLength: 3
+  OrganizationId:
+    Type: String
+    Description: Organization ID to enable workdocs notifications
+    MaxLength: 100
+    MinLength: 3
+  ARNWorkdocsSubscription:
+    Type: String
+    Description: Organization ID to enable workdocs notifications
+    MaxLength: 100
+    MinLength: 3
+
+Resources:
+  NestedStackRekognition:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub ${S3BucketURL}/deployment/rekognition.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        CustomerName: !Ref CustomerName
+        EnvironmentName: !Ref EnvironmentName
+        S3Bucket: !Ref S3Bucket
+  NestedStackWorkdocs:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub ${S3BucketURL}/deployment/workdocs.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        CustomerName: !Ref CustomerName
+        EnvironmentName: !Ref EnvironmentName
+        S3Bucket: !Ref S3Bucket
+        OrganizationId: !Ref OrganizationId
+        ARNWorkdocsSubscription: !Ref ARNWorkdocsSubscription
+        RekognitionLambdaFunction: 
+          Fn::GetAtt:
+            - NestedStackRekognition
+            - Outputs.RekognitionLambdaFunction
+        RekognitionLambdaFunctionArn: 
+          Fn::GetAtt:
+            - NestedStackRekognition
+            - Outputs.RekognitionLambdaFunctionArn
+        RekognitionStandardQueueURL:
+          Fn::GetAtt:
+            - NestedStackRekognition
+            - Outputs.RekognitionStandardQueueURL

@@ -1,0 +1,17 @@
+@import "bootstrap";
+@import '../../styles/_variables.scss';
+
+.player-container {
+	background: #01082E;
+
+	.bmpui-ui-watermark {
+		display: none !important;
+	}
+
+	.goBack {
+		position: absolute;
+		z-index: 10;
+		top: 2%;
+		left: 2%;
+	}
+}

@@ -1,0 +1,238 @@
+@import "bootstrap";
+@import '../../styles/_variables.scss';
+
+.container-subscription {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+
+	.subscription {
+		background-color: $light_gray;
+		height: 100%;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+
+		.logo {
+			margin: 30px 0 0 0;
+			text-align: center;
+		}
+
+		.text-1 {
+			margin: 10px 0px 40px;
+
+			span {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				letter-spacing: 0.2em;
+				color: #232129;
+			}
+		}
+
+		.current-pack {
+			font-family: $primary_font_family;
+			color: $primary_color;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 29px;
+			margin-bottom: 10px;
+		}
+
+		.title-subscription {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 25px;
+			line-height: 29px;
+			color: #232129;
+		}
+
+		.text-subscription {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 13px;
+			line-height: 24px;
+			color: #232129;
+		}
+
+		.features {
+			margin: 20px 0;
+			padding-bottom: 10px;
+			border-bottom: 1px solid $primary_color;
+			.feature {
+				span {
+					font-family: $primary_font_family;
+					font-style: normal;
+					font-weight: normal;
+					font-size: 13px;
+					line-height: 24px;
+					color: #232129;
+					margin-left: 15px;
+				}
+			}
+		}
+
+		.plans {
+			margin-top: 30px;
+			text-align: center;
+			display: flex;
+			justify-content: space-around;
+			width: 80%;
+
+			.col-plan {
+				margin-bottom: 40px;
+			}
+
+			.plan {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				.box {
+					background: #7B7B7B;
+					border-radius: 24px;
+					width: 163px;
+					height: 134px;
+					font-family: $primary_font_family;
+					font-style: normal;
+					font-weight: normal;
+					font-size: 13px;
+					line-height: 24px;
+					color: #fff;
+					padding-top: 20px;
+				}
+			}
+
+			a {
+				margin: 0;
+				position: absolute;
+				bottom: -10px;
+			}
+		}
+
+		button, button:hover {
+			border: 1px solid $primary_color;
+			background-color: $primary_color;
+			border-radius: 0px;
+			width: 255px;
+			height: 57px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 24px;
+			margin: 30px 0 0 0;
+			letter-spacing: 0.2em;
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+			color: #fff;
+		}
+
+		.text-danger {
+			text-align: right;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 10px;
+			line-height: 15px;
+			margin-top: 5px;
+			width: 255px;
+		}
+
+		.text-success {
+			text-align: right;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 10px;
+			line-height: 15px;
+			margin-top: 5px;
+			width: 255px;
+		}
+
+		.last-item {
+			padding-bottom: 50px;
+
+			a {
+				font-weight: bold;
+				color: #232129; 
+			}
+		}
+
+		.credit-card-form {
+			label {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: bold;
+				font-size: 9px;
+				line-height: 24px;
+				color: #232129;
+				letter-spacing: 0.2em;
+				margin-top: 20px;
+			}
+			.card-form-input {
+				background-color: transparent;
+				border-bottom: 0.5px solid #232129;
+				border-top: none;
+				border-right: none;
+				border-left: none;
+				border-radius: 0px;
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				width: 100%;
+				color: #232129;
+				letter-spacing: 0.2em;
+				margin: 0;
+			}
+			span {
+				font-family: $primary_font_family;
+				color: $primary_color;
+				font-style: normal;
+				font-weight: bold;
+				font-size: 15px;
+				line-height: 29px;
+				margin-bottom: 10px;
+			}
+			button, button:hover {
+				border: 1px solid $primary_color;
+				background-color: $primary_color;
+				border-radius: 0px;
+				width: 255px;
+				height: 57px;
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: bold;
+				font-size: 15px;
+				line-height: 24px;
+				margin: 30px 0 0 0;
+				letter-spacing: 0.2em;
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				color: #fff;
+			}
+		}
+	}
+}
+
+@include media-breakpoint-down(sm) { 
+
+	.subscription {
+
+		&.full-background {
+			height: 100% !important;
+		}
+
+		height: auto !important;
+	
+	}
+}

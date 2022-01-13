@@ -1,0 +1,86 @@
+@import '../../styles/_variables.scss';
+
+.container-recovery-password {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+
+	.recovery-password {
+		background-color: $secondary_color;
+		height: 100%;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+
+		.logo {
+			margin: 30px 0 0 0;
+			text-align: center;
+		}
+
+		.text-1 {
+			margin: 10px 0px 40px;
+
+			span {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				letter-spacing: 0.2em;
+				color: $light_gray;
+			}
+		}
+
+		input, input:focus {
+			background-color: transparent;
+			border: 1px solid #fff;
+			border-radius: 0px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: 500;
+			font-size: 13px;
+			line-height: 24px;
+			width: 255px;
+			height: 57px;
+		}
+
+		button, button:hover {
+			border: 1px solid $primary_color;
+			background-color: $primary_color;
+			border-radius: 0px;
+			width: 255px;
+			height: 57px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 24px;
+			margin: 30px 0 0 0;
+			letter-spacing: 0.2em;
+		}
+
+		.success-text {
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: 500;
+			font-size: 13px;
+			line-height: 24px;
+			color: #fff;
+			letter-spacing: 0.2em;
+		}
+
+		.text-danger {
+			text-align: right;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 10px;
+			line-height: 15px;
+			margin-top: 5px;
+			width: 255px;
+		}
+
+	}
+}
+

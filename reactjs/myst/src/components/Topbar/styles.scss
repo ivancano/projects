@@ -1,0 +1,139 @@
+@import "bootstrap";
+@import '../../styles/_variables.scss';
+
+
+#navbar {
+	background-color: #000;
+
+	a {
+		color: #fff;
+	}
+
+	.buttons {
+		align-items: center;
+		margin: 0 !important;
+
+		Button {
+			margin: 0px 10px;
+			border-radius: 0px;
+			width: 170px;
+
+			&.login {
+				margin: 0px 10px;
+				border-radius: 0px;
+				border: 1px solid $primary_color;
+				background: transparent;
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+			}
+
+			&.signup {
+				margin: 0px 10px;
+				border-radius: 0px;
+				border: 1px solid $primary_color;
+				background: $primary_color;
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+			}
+
+			
+		}
+
+		#my-account-dropdown {
+			margin: 0px 10px;
+			border-radius: 0px;
+			color: $primary_color;
+			background: none;
+			border: none;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 24px;
+			letter-spacing: 0.2em;
+		}
+
+		.dropdown-menu {
+			background: #D7D7D7;
+			margin-bottom: 20px !important;
+
+			.my-account-option {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 13px;
+				line-height: 24px;
+				color: #000;
+				letter-spacing: 0.2em;
+			}
+		}
+	}
+
+	.links {
+		margin: 0 !important;
+	}
+
+	.nav-link {
+		font-family: $primary_font_family;
+		font-style: normal;
+		font-weight: 500;
+		font-size: 15px;
+		line-height: 24px;
+		margin-left: 20px;
+	}
+
+}
+
+@include media-breakpoint-up(lg) { 
+
+	#navbar .signup {
+		margin-right: 60px !important;
+	}
+
+	#navbar #my-account-dropdown {
+		margin-right: 60px !important;
+	}
+
+}
+
+@include media-breakpoint-down(lg) { 
+
+	#navbar {
+		.nav-link {
+			margin: 0 !important;
+		}
+
+		.links {
+			text-align: center
+		}
+
+		.buttons {
+			.bi-bell {
+				margin-bottom: 20px !important;
+			}
+
+			Button {
+				&.signup {
+					margin-top: 20px !important;
+					margin-bottom: 20px !important;
+				}
+				
+				&.login {
+					margin-top: 20px !important;
+				}
+			}
+
+			#my-account-dropdown {
+				margin-top: 20px !important;
+				margin-bottom: 20px !important;
+			}
+		}
+	}
+
+}

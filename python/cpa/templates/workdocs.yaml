@@ -1,0 +1,491 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Enter the project tag
+    MaxLength: 100
+    MinLength: 3
+  CustomerName:
+    Type: String
+    Description: Enter the customer tag
+    MaxLength: 100
+    MinLength: 3
+  EnvironmentName:
+    Type: String
+    Description: Enter the environment tag
+    MaxLength: 100
+    MinLength: 3
+  S3Bucket:
+    Type: String
+    Description: S3 Bucket to process images
+    MaxLength: 100
+    MinLength: 3
+  OrganizationId:
+    Type: String
+    Description: Organization ID to enable workdocs notifications
+    MaxLength: 100
+    MinLength: 3
+  ARNWorkdocsSubscription:
+    Type: String
+    Description: Organization ID to enable workdocs notifications
+    MaxLength: 100
+    MinLength: 3
+  RekognitionLambdaFunction:
+    Type: String
+  RekognitionLambdaFunctionArn:
+    Type: String
+  RekognitionStandardQueueURL:
+    Type: String
+
+Resources:
+  WorkdocsSubscriptionLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Environment:
+        Variables:
+          ORGANIZATION_ID: !Sub ${OrganizationId}
+          ENDPOINT: !Sub https://${WorkdocsNotificationRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}
+      Code:
+        ZipFile: |
+          import logging
+          import os
+          import boto3
+          import cfnresponse
+
+          log = logging.getLogger()
+          log.setLevel(logging.INFO)
+
+          e = os.environ
+          ORGANIZATION_ID = e['ORGANIZATION_ID']
+          ENDPOINT = e['ENDPOINT']
+
+          workdocs = boto3.client('workdocs')
+
+          def lambda_handler(event, context):
+              responseValue = 200
+              responseData = {}
+              responseData['Data'] = responseValue
+              try:
+                  createSNSNotification(ORGANIZATION_ID, ENDPOINT)
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              except Exception as e:
+                  print(e)
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              return {
+                  'statusCode': 200
+              }
+              
+          def getSNSNotifications(organizationId):
+              response = workdocs.describe_notification_subscriptions(
+                  OrganizationId=organizationId
+              )
+              
+          def createSNSNotification(organizationId, endpoint):
+              response = workdocs.create_notification_subscription(
+                  OrganizationId=organizationId,
+                  Endpoint=endpoint,
+                  Protocol='HTTPS',
+                  SubscriptionType='ALL'
+              )
+              
+          def deleteSNSNotification(subscriptionId, organizationId):
+              response = workdocs.delete_notification_subscription(
+                  OrganizationId=organizationId,
+                  SubscriptionId=subscriptionId
+              )
+
+      Handler: index.lambda_handler
+      Role: !Ref ARNWorkdocsSubscription
+      Runtime: python3.8
+      Timeout: 60
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Customer
+          Value: !Ref CustomerName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+  WorkdocsSubscriptionListenerLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    DependsOn:
+      - WorkdocsNotificationRestApi
+    Properties:
+      Environment:
+        Variables:
+          ORGANIZATION_ID: !Sub ${OrganizationId}
+          ENDPOINT: !Sub https://${WorkdocsNotificationRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}
+          S3_BUCKET: !Sub ${S3Bucket}
+          LAMBDA_IMAGE_REKOGNITION: !Ref RekognitionLambdaFunction
+          SQS_URL: !Ref RekognitionStandardQueueURL
+      Code:
+        ZipFile: |
+          import logging
+          import os
+          import boto3
+          import urllib
+          import json
+          import requests
+          import cfnresponse
+          from PIL import Image, ExifTags
+          from PIL.ExifTags import GPSTAGS
+          from PIL.ExifTags import TAGS
+          from geopy.geocoders import Nominatim
+
+          log = logging.getLogger()
+          log.setLevel(logging.INFO)
+
+          e = os.environ
+          ORGANIZATION_ID = e['ORGANIZATION_ID']
+          ENDPOINT = e['ENDPOINT']
+          LAMBDA_IMAGE_REKOGNITION = e['LAMBDA_IMAGE_REKOGNITION']
+          S3_BUCKET = e['S3_BUCKET']
+          SQS_URL = e['SQS_URL']
+
+          workdocs = boto3.client('workdocs')
+          s3 = boto3.resource('s3')
+          lambda_client = boto3.client('lambda')
+          sqsClient = boto3.client('sqs')
+          sqsResource = boto3.resource('sqs')
+
+          def lambda_handler(event, context):
+              responseValue = 200
+              responseData = {}
+              responseData['Data'] = responseValue
+              try:
+                  if "SubscribeURL" in event:
+                      response = urllib.request.urlopen(event['SubscribeURL'])
+                  elif "Reprocess" in event:
+                      files = event['Data']
+                      for f in files:
+                          print(f['name'])
+                          mainProcess(f['version_id'], f['document_id'])
+                  else:
+                      message = event['Message']
+                      message_dict = json.loads(message)
+                      workdocs_action = message_dict['action']
+                      if(workdocs_action == "upload_document_version"):
+                          version_id = message_dict['entityId']
+                          document_id = message_dict['parentEntityId']
+                          mainProcess(version_id, document_id)
+                  #cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              except Exception as e:
+                  print(e)
+                  #cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+              return {
+                  'statusCode': 200
+              }
+              
+          def mainProcess(version_id, document_id):
+              metadata = getDocument(document_id)
+              if(metadata != None):
+                  document_folder = getDocumentPath(document_id)
+                  createdTimestamp = metadata['CreatedTimestamp'].strftime('%m/%d/%Y')
+                  docInfo = getUrlDocument(document_id, version_id)
+                  url = docInfo['url']
+                  contentType = docInfo['contentType']
+                  if(contentType == 'image/jpeg' or contentType == 'image/png'):
+                      exif = getExif(url)
+                      geotags = None
+                      if(exif != None):
+                          try:
+                              exif_dict = getExifData(exif)
+                              geotags = getGeotagging(exif)
+                              geolocator = Nominatim(user_agent="jkdemo")
+                          except Exception as e:
+                              print(e)
+                      moveFileToS3(url, S3_BUCKET, metadata['LatestVersionMetadata']['Name'])
+                      if(geotags != None):
+                          if(geotags['GPSLatitudeRef'] != ''):
+                              location = None
+                              try:
+                                  location = geolocator.reverse(getCoordinates(geotags))
+                              except Exception as e:
+                                  print(e)
+                              payload = {
+                                  "DocumentId": document_id,
+                                  "VersionId": version_id,
+                                  "Bucket": S3_BUCKET,
+                                  "Key": metadata['LatestVersionMetadata']['Name'],
+                                  "CreatedTimestamp": createdTimestamp,
+                                  "PhotoCreated": exif_dict['DateTimeOriginal'],
+                                  "ImageWidth": exif_dict['ExifImageWidth'],
+                                  "ImageHeight": exif_dict['ExifImageHeight'],
+                                  "GPSLatitude0": str(geotags['GPSLatitude'][0]),
+                                  "GPSLatitude1": str(geotags['GPSLatitude'][1]),
+                                  "GPSLatitude2": str(geotags['GPSLatitude'][2]),
+                                  "GPSLatitudeRef": str(geotags['GPSLatitudeRef']),
+                                  "GPSLongitude0": str(geotags['GPSLongitude'][0]),
+                                  "GPSLongitude1": str(geotags['GPSLongitude'][1]),
+                                  "GPSLongitude2": str(geotags['GPSLongitude'][2]),
+                                  "GPSLongitudeRef": str(geotags['GPSLongitudeRef']),
+                                  "Location": str(location.address) if location != None else "",
+                                  "Folder": document_folder
+                              }
+                          else:
+                              payload = {
+                                      "DocumentId": document_id,
+                                      "VersionId": version_id,
+                                      "Bucket": S3_BUCKET,
+                                      "Key": metadata['LatestVersionMetadata']['Name'],
+                                      "CreatedTimestamp": createdTimestamp,
+                                      "PhotoCreated": exif_dict['DateTimeOriginal'],
+                                      "ImageWidth": exif_dict['ExifImageWidth'],
+                                      "ImageHeight": exif_dict['ExifImageHeight'],
+                                      "Folder": document_folder
+                              }
+                      else:
+                          payload = {
+                                  "DocumentId": document_id,
+                                  "VersionId": version_id,
+                                  "Bucket": S3_BUCKET,
+                                  "Key": metadata['LatestVersionMetadata']['Name'],
+                                  "CreatedTimestamp": createdTimestamp,
+                                  "Folder": document_folder
+                          }
+                      sendSqsMessage(payload)
+              else:
+                  return None
+              
+          def sendSqsMessage(payload):
+              sqsResponse = sqsClient.send_message(
+                              QueueUrl=SQS_URL,
+                              MessageBody=json.dumps(payload),
+                              DelaySeconds=2
+                          )
+
+          def getUrlDocument(document_id, version_id):
+              response = workdocs.get_document_version(
+                  DocumentId=document_id,
+                  VersionId=version_id,
+                  Fields='SOURCE'
+              )
+              url = response['Metadata']['Source']['ORIGINAL']
+              return { "url": url, "contentType": response['Metadata']['ContentType'] }
+              
+          def getDocument(document_id):
+              response = workdocs.get_document(
+                  DocumentId=document_id,
+                  IncludeCustomMetadata=True
+              )
+              metadata = response['Metadata']
+              return metadata
+              
+          def getDocumentPath(document_id):
+              folder = ""
+              try:
+                  response = workdocs.get_document_path(
+                      DocumentId=document_id,
+                      Fields='NAME'
+                  )
+                  folder = response["Path"]["Components"][len(response["Path"]["Components"])-2]["Name"]
+              except Exception as e:
+                  print(e)
+              return folder
+              
+          def createComment(document_id, version_id, text):
+              response = workdocs.create_comment(
+                  DocumentId=document_id,
+                  VersionId=version_id,
+                  Text=text,
+                  Visibility='PUBLIC',
+                  NotifyCollaborators=False
+              )
+
+          def moveFileToS3(url, bucket_name, key):
+              try:
+                  url = url
+                  r = requests.get(url, stream=True)
+                  bucket = s3.Bucket(bucket_name)
+                  bucket.upload_fileobj(r.raw, key)
+              except Exception as e:
+                  print(e)
+
+          def getExif(url):
+              exifValue = None
+              try:
+                  r = requests.get(url, stream=True)
+                  image = Image.open(r.raw)
+                  exifValue = image._getexif()
+                  return exifValue
+              except Exception as e:
+                  print(e)
+                  return exifValue
+
+          def getExifData(exif):
+              img_exif_dict = {}
+              img_exif_data = {}
+              if exif:
+                  img_exif_data = dict(exif)
+                  try:
+                      img_exif_dict['DateTimeOriginal'] = img_exif_data[36867]            
+                  except Exception as e:
+                      img_exif_dict['DateTimeOriginal'] = 'Exif Detail Not Available'
+                  try:
+                      img_exif_dict['ExifImageWidth'] = img_exif_data[40962]
+                  except Exception as e:
+                      img_exif_dict['ExifImageWidth'] = 'Exif Detail Not Available'
+                  try:
+                      img_exif_dict['ExifImageHeight'] = img_exif_data[40963]
+                  except Exception as e:
+                      img_exif_dict['ExifImageHeight'] = 'Exif Detail Not Available'
+              else:
+                  img_exif_dict['DateTimeOriginal'] = 'Exif Detail Not Available'
+                  img_exif_dict['ExifImageWidth'] = 'Exif Detail Not Available'
+                  img_exif_dict['ExifImageHeight'] = 'Exif Detail Not Available'       
+              return img_exif_dict 
+
+          def getGeotagging(exif):
+              geotagging = {
+                      'GPSLatitude':('','',''),
+                      'GPSLatitudeRef':'',
+                      'GPSLongitude':('','',''),
+                      'GPSLongitudeRef':'',
+                  }
+              if exif:
+                  for (idx, tag) in TAGS.items():
+                      if tag == 'GPSInfo':
+                          if idx not in exif:
+                              continue
+                          for (key, val) in GPSTAGS.items():
+                              if key in exif[idx]:
+                                  geotagging[val] = exif[idx][key]
+
+              return geotagging
+              
+          def getDecimalFromDms(dms, ref):
+              degrees = dms[0]
+              minutes = dms[1] / 60.0
+              seconds = dms[2] / 3600.0
+              if ref in ['S', 'W']:
+                  degrees = -degrees
+                  minutes = -minutes
+                  seconds = -seconds
+
+              return round(degrees + minutes + seconds, 5)
+              
+          def getCoordinates(geotags):
+              lat = getDecimalFromDms(geotags['GPSLatitude'], geotags['GPSLatitudeRef'])
+              lon = getDecimalFromDms(geotags['GPSLongitude'], geotags['GPSLongitudeRef'])
+              return (lat,lon)
+      Handler: index.lambda_handler
+      Role: !GetAtt WorkdocsLambdaIAMRole.Arn
+      Runtime: python3.8
+      Timeout: 900
+      MemorySize: 512
+      Layers:
+        - !Ref WorkdocsLayer
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Customer
+          Value: !Ref CustomerName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+  WorkdocsSubscriptionListenerLambdaAsyncConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref WorkdocsSubscriptionListenerLambdaFunction
+      MaximumRetryAttempts: 0
+      Qualifier: "$LATEST"
+  WorkdocsLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.8
+      Content:
+        S3Bucket: !Sub ${S3Bucket}
+        S3Key: deployment/layer.zip
+      Description: Workdocs module layer
+      LayerName: workdocs-layer
+      LicenseInfo: MIT
+  WorkdocsLambdaIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: LoggingAllowance
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource: !Ref RekognitionLambdaFunctionArn
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AmazonWorkDocsFullAccess
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+  LambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt WorkdocsSubscriptionListenerLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WorkdocsNotificationRestApi}/*/POST/
+  WorkdocsNotificationRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "API Gateway Workdocs Notifications"
+      EndpointConfiguration:
+        Types:
+          - EDGE
+  WorkdocsNotificationApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ResourceId: !GetAtt WorkdocsNotificationRestApi.RootResourceId
+      HttpMethod: POST
+      AuthorizationType: NONE
+      RestApiId: !Ref WorkdocsNotificationRestApi
+      MethodResponses:
+      - StatusCode: "200"
+        ResponseModels: { "application/json": "Empty" }
+      Integration:
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+        - StatusCode: "200"
+        Type: AWS
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !GetAtt WorkdocsSubscriptionListenerLambdaFunction.Arn
+  WorkdocsNotificationApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - WorkdocsNotificationApiGatewayMethod
+    Properties:
+      RestApiId: !Ref WorkdocsNotificationRestApi
+      StageName: !Ref EnvironmentName
+  WorkdocsNotificationApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt WorkdocsSubscriptionListenerLambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WorkdocsNotificationRestApi}/${EnvironmentName}/${WorkdocsNotificationApiGatewayMethod}/
+  WorkdocsSubscriptionLambdaFunctionInvoke:
+    Type: AWS::CloudFormation::CustomResource
+    DependsOn:
+      - WorkdocsSubscriptionListenerLambdaFunction
+      - WorkdocsNotificationRestApi
+      - WorkdocsNotificationApiGatewayDeployment
+    Properties:
+      ServiceToken: !GetAtt WorkdocsSubscriptionLambdaFunction.Arn
+
+Outputs:
+  WorkdocsNotificationApiGateway:
+    Value: !Sub https://${WorkdocsNotificationRestApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}

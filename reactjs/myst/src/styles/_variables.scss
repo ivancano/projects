@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins');
+
+$primary_color: #680FFB;
+$secondary_color: #232129; 
+$primary_font_family: 'Poppins';
+$link_color: #878787;
+$light_gray: #CECECE;
+
+:export {
+	primary_color: $primary_color;
+}

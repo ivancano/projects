@@ -1,0 +1,185 @@
+@import '../../styles/_variables.scss';
+
+.container-sign-up {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+
+	.sign-up {
+		background-color: $secondary_color;
+		height: 100%;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
+
+		&.success {
+			background-color: $primary_color !important;
+
+			button, button:hover {
+				border: 1px solid $secondary_color;
+				background-color: $secondary_color;
+				border-radius: 0px;
+				width: 255px;
+				height: 57px;
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: bold;
+				font-size: 15px;
+				line-height: 24px;
+				margin: 30px 0 0 0;
+				letter-spacing: 0.2em;
+				color: #fff;
+			}
+		}
+
+		.logo {
+			margin: 30px 0 0 0;
+			text-align: center;
+		}
+
+		.text-1 {
+			margin: 10px 0px 40px;
+
+			span {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				letter-spacing: 0.2em;
+				color: $light_gray;
+			}
+		}
+
+		.text-2 {
+			margin: 10px 0px 40px;
+
+			span {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 25px;
+				line-height: 29px;
+				color: #fff;
+			}
+		}
+
+		input, input:focus {
+			background-color: transparent;
+			border: 1px solid #fff;
+			border-radius: 0px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: 500;
+			font-size: 13px;
+			line-height: 24px;
+			width: 255px;
+			height: 57px;
+			color: #fff;
+		}
+
+		button, button:hover {
+			border: 1px solid $primary_color;
+			background-color: $primary_color;
+			border-radius: 0px;
+			width: 255px;
+			height: 57px;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: bold;
+			font-size: 15px;
+			line-height: 24px;
+			margin: 30px 0 0 0;
+			letter-spacing: 0.2em;
+		}
+
+		.forgot-password {
+			margin-top: 10px;
+
+			a {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: normal;
+				font-size: 10px;
+				line-height: 15px;
+				text-decoration: underline;
+				color: $link_color;
+			}
+
+			a:hover {
+				color: $link_color;
+			}
+		}
+
+		.dont-have-account {
+			margin-top: 30px;
+
+			a {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: normal;
+				font-size: 13px;
+				line-height: 15px;
+				text-decoration: underline;
+				color: $link_color;
+			}
+
+			a:hover {
+				color: $link_color;
+			}
+		}
+
+		.trial {
+			margin-top: 20px;
+			width: 255px;
+			height: 57px;
+			margin-bottom: 50px;
+
+			.col {
+				padding: 0;
+			}
+
+			button {
+				font-family: $primary_font_family;
+				font-style: normal;
+				font-weight: 500;
+				font-size: 15px;
+				line-height: 24px;
+				border: 1px solid $primary_color;
+				background-color: transparent;
+				margin: 0px;
+				color: #fff;
+				letter-spacing: 0.2em;
+			}
+
+		}
+
+		.group-password-sign-up {
+			position: relative;
+
+			.bi-eye {
+				position: absolute !important;
+				top: 20px;
+				right: 10px;
+			}
+
+			.bi-eye-slash {
+				position: absolute !important;
+				top: 20px;
+				right: 10px;
+			}
+		}
+
+		.text-danger {
+			text-align: right;
+			font-family: $primary_font_family;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 10px;
+			line-height: 15px;
+			margin-top: 5px;
+			width: 255px;
+		}
+	}
+}

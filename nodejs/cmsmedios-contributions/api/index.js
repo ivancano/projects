@@ -1,0 +1,25 @@
+require('dotenv').config();
+const paymentGatewaysApi = require('./routes/paymentGateways').paymentGatewaysApi;
+const paymentsApi = require('./routes/payments').paymentsApi;
+const serverless = require('serverless-http');
+const subscriptionsApi = require('./routes/subscriptions').subscriptionsApi;
+const usersApi = require('./routes/users').usersApi;
+const reportsApi = require('./routes/reports').reportsApi;
+const contributionsApi = require('./routes/contributions').contributionsApi;
+const webhookApi = require('./routes/webhooks').webhookApi;
+const loginApi = require('./routes/login').loginApi;
+const openMethodsApi = require('./routes/openMethods').openMethodsApi;
+const cronjobsApi = require('./cronjobs/cronjobs').cronjobsApi;
+const exceptionsApi = require('./exceptions/exceptions').exceptionsApi;
+
+module.exports.paymentGateways = serverless(paymentGatewaysApi);
+module.exports.payments = serverless(paymentsApi);
+module.exports.subscriptions = serverless(subscriptionsApi);
+module.exports.users = serverless(usersApi);
+module.exports.reports = serverless(reportsApi);
+module.exports.contributions = serverless(contributionsApi);
+module.exports.webhooks = serverless(webhookApi);
+module.exports.login = serverless(loginApi);
+module.exports.openMethods = serverless(openMethodsApi);
+module.exports.cronjobs = serverless(cronjobsApi);
+module.exports.exceptions = serverless(exceptionsApi);

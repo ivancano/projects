@@ -1,0 +1,14 @@
+{
+  "name": "tasks",
+  "broker_url": "redis://servicenow_redis:6379/0",
+  "backend_url": "redis://servicenow_redis:6379/1",
+  "kernel": "python",
+  "app_name": "streamerApp",
+  "pipelines": [
+    {
+      "name": "Alerts SevOne->SNOW mock",
+      "configFile": "config/pipelineAlertMock.json",
+      "period": 15
+    }
+  ]
+}

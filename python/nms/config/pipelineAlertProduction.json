@@ -1,0 +1,87 @@
+{
+  "options": {
+    "logLevel": "DEBUG"
+  },
+  "input": {
+    "name": "sevOne",
+    "source": "SevOne",
+    "url": "http://10.128.11.160/api/v2/alerts/filter",
+    "urlClear": "http://10.128.11.160/api/v2/alerts/--alert-id--/clear",
+    "headers": {
+      "Connection": "keep-alive",
+      "X-AUTH-TOKEN": "eyJhbGciOiJIUzUxMiJ9eyJpc3MiOiJhZG1pbiJ9qntS0KMGS9kf8r8oVv7hVPOaNA4vvRAojfbkRjEp6-LbtLBWrHYekoxP9Qx3xmSrr90K-XddEH6nXooamTRoNQ",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "timeWindow": 180,
+    "timeWindowClosedAlerts": 360,
+    "pageSize": 10000
+  },
+  "output": {
+    "name": "serviceNow",
+    "source": "SNOW",
+    "url": "http://localhost:8080/api/mid/em/inbound_event?Transform=TransformEvents_MidSevOne",
+    "auth": {
+      "user": "admin",
+      "pass": "admin"
+    }
+  },
+  "processor": {
+    "name": "alert",
+    "blankedDeviceGroups": {
+      "LAN_SEVONE": "SERVER MONITORING",
+      "Critical": "GLOBAL NETWORK DATA SERVICES",
+      "Factory Floor": "GLOBAL NETWORK DATA SERVICES",
+      "Firewall": "GLOBAL NETWORK SECURITY SERVICES",
+      "LAN": "GLOBAL NETWORK DATA SERVICES",
+      "WAN": "GLOBAL NETWORK DATA SERVICES",
+      "PON": "GLOBAL NETWORK DATA SERVICES",
+      "SDWAN": "GLOBAL NETWORK DATA SERVICES",
+      "Wireless": "GLOBAL NETWORK DATA SERVICES"
+    },
+    "invalidClearMessage": [
+      "issue is cleared by servicenow",
+      "issue is cleared by sevone"
+    ],
+    "toolsNetworkAutomationTag": "TOOLS NETWORK AUTOMATION",
+    "toolsNetworkAutomationKeys": [
+      "Memory"
+    ],
+    "severity": {
+      "0": [
+        1,
+        "Critical"
+      ],
+      "1": [
+        1,
+        "Critical"
+      ],
+      "2": [
+        2,
+        "Major"
+      ],
+      "3": [
+        3,
+        "Minor"
+      ],
+      "4": [
+        4,
+        "Warning"
+      ]
+    },
+    "domainList": [
+      "sevitlab.net"
+    ],
+    "nodeKeys": [
+      "WiFi AP:"
+    ]
+  },
+  "database": {
+    "host": "servicenow_mysql",
+    "user": "root",
+    "password": "sevonesnow",
+    "port": "3306",
+    "databaseName": "streamer",
+    "tableName": "alarms"
+  }
+}
