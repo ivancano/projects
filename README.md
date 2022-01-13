@@ -3,11 +3,11 @@
 ## Python
 
 ### NMS
-- Description: solution that gets alerts from an incident system and transfers them to another and vice versa.
+- Description: Solution that gets alerts from an incident system and transfers them to another and vice versa.
 - Technologies: Python, MySQL, Docker, Celery.
 
 ### CPA
-- Description: is a cloud solution running on AWS and it is integrated with a repository of images. It analyzes every uploaded image to detect objects and known people in order to facilitate search.
+- Description: Cloud solution running on AWS and it is integrated with a repository of images. It analyzes every uploaded image to detect objects and known people in order to facilitate search.
 - Technologies: Python, AWS EC2, AWS API Gateway, AWS Rekognition, AWS SQS, AWS Workdocs, AWS Lambda.
 
 
